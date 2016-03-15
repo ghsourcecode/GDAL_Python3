@@ -11,8 +11,18 @@ Functions.py is needed by many of these scripts, as it contains basic functions 
 Crucial file as many of the other scripts call functions from within, so be sure to put it in the *PYTHONPATH*   
 
 Includes:
-* **chkdir** and **chkdir2** handles directory checking, deletion and creation
-* **getLargVal** multiple same dimension arrays are the input -- output is one array with the largest respective value at each data point
+* **chkdir** and **chkdir2** handle directory checking, deletion and creation
+* **getLargVal** multiple same dimension arrays are the input - output is one array with the largest respective value at each data point
+* **array_to_raster** and **array_to_raster_noTi** create GeoTiffs from numpy arrays, either using an exisiting GeoTiff as a blueprint or with manual attirbute input
+* **linReg** caluclates linear regression parameters and the Mann-Kendall trend test for each pixel in a stack of rasters (regression between values an time)
+* **linReg2** similar to linReg, but instead of Y-axis being time steps, two different rasters stacks are correlated on a pixel by pixel basis. 
+	This script is flexible, works with arrays or GeoTiffs as input, and should work even for stacks that differ in extent, resolution or coordinate system
+* **tiffToarray** converts a folder of raster files into arrays and returns a list of arrays (inverse function to *array_to_raster*)
+* **singleTifToArray** converts only one raster file into an array and returns the array
+* **mk_test** calculates the Mann-Kendall trend test and returns h and p value (originally adopted from http://www.ambhas.com/codes/statlib.py but changed 
+	to use numpy matrices and other minor changes -> script is now about 35x faster than the original)
+* **hdfTOtif** convert HDF files to GeoTiff format, quite specific to certain NDVI data, as DN values are converted to NDVI in the process
+* 'BILtoTIF' convert BIL files to GeoTiff format
 
 
 ### MiniScripts.py

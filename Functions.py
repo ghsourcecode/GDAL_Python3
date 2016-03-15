@@ -1,25 +1,17 @@
 # -*- coding: utf-8 -*-
 
-import numpy as np
 import gdal, os, scipy
-from scipy import stats
 from gdalconst import *
 
+import numpy as np
+import scipy.ndimage
+import numpy.ma as ma
 
-import osr, zipfile, datetime
+import osr, datetime
 import xlrd, string, math, random
 import subprocess
 
 import UTMconversion as UTMconv
-
-from pylab import plot
-from scipy.stats import norm
-import scipy.ndimage
-
-import numpy.ma as ma
-
-
-
 
 
 #########################################################################################
@@ -79,9 +71,8 @@ def getLargVal(*inA):
     
     return result
 
-#very important to use brackets around tuple items (inA[x]) as results will be
-#strange if not done
-#ONLY WORKS FOR UP TO 4 INPUT ARRAYS, OLD MANUAL WAY
+
+#DEPRECATED: ONLY WORKS FOR UP TO 4 INPUT ARRAYS, OLD MANUAL WAY
 def getLargVal_man(*inA):
     inputlen = len(inA) 
     
@@ -117,19 +108,22 @@ def getLargVal_man(*inA):
 
 
 def array_to_raster(inTiff,array,outFile,dataType=gdal.GDT_Float32):
-    """Array > Raster
-    Save a raster from a C order array.
-    :param array: ndarray
+    
+    """
+    Save a raster from a C order array. Standard output is GeoTiff.
+    The attributes of an exisiting raster are used for the new output raster    
     
     Changed after the original
     http://gis.stackexchange.com/questions/58517
     /python-gdal-save-array-as-raster-with-projection-from-other-file
+    
+    inTiff   is an exisiting Tiff file, the attributes from this file are used
+             to create the new one
+    array    is the array that should be saved as a tiff   
+    outFile  is the path and name of the desired output tiff
+    
     """
     
-    #inTiff   is an exisiting Tiff file, the attributes from this file are used
-    #to create the new one
-    #array    is the array that should be saved as a tiff   
-    #outFile  is the path and name of the desired output tiff
     inDataset = gdal.Open(inTiff, GA_ReadOnly)
 
     # You need to get those values like you did.
@@ -209,11 +203,11 @@ def array_to_raster_noTi(x_pix,y_pix,pixSize,x_min,y_max,proj,array,outFile):
 #########################################################################################
 
 #calculate linear regression and Mannn-Kendall-pValue coefficients for each raster coordinate
+#returns a tuple of arrays
 
 def linReg(inList):
     # Benchmark: a time series of 15 rasters, with each having 321x161 pix (51681), takes
-    # about 19.1 seconds in total, with 5.8s for linReg and 13.2s for MK
-    
+    # about 19.1 seconds in total, with 5.8s for linReg and 13.2s for MK    
 
     #equally spaced time steps by length of inList    
     timeList = np.asarray(list(range(len(inList))))
@@ -261,21 +255,29 @@ def linReg(inList):
     return outTuple
 
 
-
-
-
-
 #########################################################################################
 # LINEAR REGRESSION BETWEEN TWO VARIABLES
 #########################################################################################
 
-#calculates the linear regression coefficients between two lists of tif rasters or arrays
-#If input are raster (tif) the entire path is needed in the input list
-#Input series should cover the same area. If their resolution is different, the simpler 
-#one will be enlarged
-#outFol only needed for Raster input
+"""
 
-def linReg2(inList1,inList2,outFol="D:/Test/twoFol/"):
+calculates the linear regression coefficients between two lists of tif rasters OR arrays,
+though arrays must have the same dimensions, while Rasters may vary as described below:
+
+If input are raster (tif) the entire path is needed in the input list
+
+Input series can cover different extents. In this case, new rasters are created for 
+ each series with the overlapping extent. 
+
+If their resolution is different, the simpler one will be enlarged
+
+If both stacks use different coordinate systems, the second stack is reprojected
+
+outFol only needed for Raster input
+
+"""
+
+def linReg2(inList1,inList2,outFol=".../outFol/"):
     
     #test if both lists contain the same number of datasets/rasters
     if len(inList1) != len(inList2):
@@ -328,7 +330,6 @@ def linReg2(inList1,inList2,outFol="D:/Test/twoFol/"):
         #If raster and different coordinate systems and only partially overlap:
         if firstRasGDAL1.GetProjectionRef() != firstRasGDAL2.GetProjectionRef():
             intersection = my_intersect(refRas1,refRas2)
-            target_proj = proj1
             
             infoTxt.write("Different Coordinate Systems -> Coordinate Systems changed to " +
                           proj1.ExportToProj4() + "\n" +
@@ -394,7 +395,7 @@ def linReg2(inList1,inList2,outFol="D:/Test/twoFol/"):
             newList1 = []
             newList2 = []
             
-            #Create new files (on HDD) with shared extent from DIRST input list
+            #Create new files (on HDD) with shared extent from FIRST input list
             for file in inList1:
                 chkdir2(outFol + "Cropped/")
                 outPath = outFol + "Cropped/" + file[-13:]
@@ -602,13 +603,11 @@ def linReg2(inList1,inList2,outFol="D:/Test/twoFol/"):
     infoTxt.close()
     print("Processing Done! See output File " + outFol + "_Info.txt   for Details")
     
-#http://codereview.stackexchange.com/questions/38580/fastest-way-to-iterate-over-numpy-array
 
 
 #########################################################################################
 # TIFF TO ARRAY
 #########################################################################################
-
 
 #read an entire folder of rasters as arrays and store them in a list, default raster
 #format is tif, ifStatm is an optional if statement

@@ -19,7 +19,7 @@ A collection of small scripts including:
 
 ### netCDFtoTiff.py
 
-Converts 3D netCDF files (X,Y,Z = lon, lat, value) into a GeoTiff raster. Requires Functions.py and the [netCDF4](https://netcdf4-python.googlecode.com/svn/trunk/docs/netCDF4-module.html) module
+Converts 3D netCDF files (X,Y,Z = lon, lat, value) into multiple single GeoTiff rasters. Requires Functions.py and the [netCDF4](https://netcdf4-python.googlecode.com/svn/trunk/docs/netCDF4-module.html) module
 
 Extent and pixel size must be manually changed, all else is extracted automatically.   
 The script returns files that are numbered in continuous order (*1.tif, 2.tif, 3.tif...*)

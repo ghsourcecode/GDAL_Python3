@@ -17,3 +17,10 @@ A collection of small scripts including:
 * change a number string representing months into month names
 
 
+### netCDFtoTiff.py
+
+Converts 3D netCDF files (X,Y,Z = lon, lat, value) into a GeoTiff raster. Requires netCDF4 and Functions.py
+
+Extent and pixel size must be manually changed, all else is extracted automatically.   
+The script returns files that are numbered in continuous order (*1.tif, 2.tif, 3.tif...*)
+

@@ -16,9 +16,8 @@ endYear = 2013
 
 startTime = datetime.datetime.now()
 
-
+# Months to be used, min:1 max:12
 monthInt = [1,2,3,4,5,6,7,8,9,10,11,12]
-#monthInt = [1,2,3,4,5]
 
 monthNum = ['01', '02', '03', '04', '05', '06', 
             '07', '08', '09', '10', '11', '12']
@@ -76,12 +75,7 @@ for j in range(12): #value to add to comblist
     for k in combList:
         kList = list(k) 
         newList1 = [x2+j for x2 in kList] #new sets with j added
-        
-        #for newX in range(len(newList1)) :  #if set entries > maxLen, maxlen is subtr.
-        #    if newList1[newX] > maxLen :
-        #       newList1[newX] = newList1[newX] - maxLen
-        #newList1.sort()
-        
+ 
         newTuple = tuple(newList1)
         
         if newTuple not in combList: #only if set is not already exisiting it gets in

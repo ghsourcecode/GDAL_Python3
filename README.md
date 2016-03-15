@@ -5,6 +5,17 @@ Last tested (March 2016) with [GDAL 2.0.2](http://www.gisinternals.com/query.htm
 
 Functions.py is needed by many of these scripts, as it contains basic functions repeatedly required
 
+### best_Reg.py
+
+Input is a folder containing monthly rasters potentially spanning over several years (file naming scheme: 1999_03.tif)
+Script calculates pixel-based linear regressions for many different month/season combinations. 
+The script physically saves the output of each combinatio to HDD. If it is re-run, it will check for existing files, so already exisiting combinations are
+ignored in following runs
+
+This is done within one year and also spanning into the next year (e.g. for winter)
+
+This allows to handle seasons not as static entities, but can help to find better combinations (e.g. winter is often represented as DJF, but may show
+better results as NDJF or NDJFM)
 
 ### Functions.py
 

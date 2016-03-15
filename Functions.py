@@ -662,7 +662,7 @@ def singleTifToArray(inRas):
 #########################################################################################
 
 #Mann-Kendall-Test
-###Orifnially from: http://www.ambhas.com/codes/statlib.py
+###Originally from: http://www.ambhas.com/codes/statlib.py
 # Script changed, now 35x faster than original
 
 def mk_test(x, alpha = 0.05):
@@ -677,7 +677,6 @@ def mk_test(x, alpha = 0.05):
   
     # calculate the unique data
     # return_counts=True returns a second array that is equivalent to tp in old version
-    
     unique_x = np.unique(x, return_counts=True)
     g = len(unique_x[0])
     
@@ -701,18 +700,6 @@ def mk_test(x, alpha = 0.05):
     
 
     return h, p
-
-
-
-
-#ist ein Beispiel
-#alpha = 0.05
-#x = np.array([2,3,2,3,2,3])
-
-#print(mk_test(x,alpha))
-
-#print("hello")
-
 
 
 #########################################################################################
@@ -750,10 +737,8 @@ def hdfTOtif(nameHDF,outFile, slicing = [0,0,0,0], projName = "EPSG:4326"):
 
     
     #array = numpy.delete(array, np.s_[0:2500], axis=1)   
-    array = array[y_Start:y_End,x_Start:x_End]
-    
+    array = array[y_Start:y_End,x_Start:x_End]    
     array = array * 0.004 - 0.08 #DN values to NDVI  
-    
     
     
     PIXEL_SIZE = 0.0089285714
@@ -796,16 +781,12 @@ def hdfTOtif(nameHDF,outFile, slicing = [0,0,0,0], projName = "EPSG:4326"):
 
 #convert BIL files to tiffs
 
-#http://gis.stackexchange.com/questions/42584/how-to-call-gdal-translate-from-python-code
 
 def BILtoTIF(inBilPath,outTifPath):
     
-    inBil = gdal.Open(inBilPath)    #InBIL
-    
-    driver = gdal.GetDriverByName('Gtiff') #Output Driver
-    
+    inBil = gdal.Open(inBilPath)    #InBIL    
+    driver = gdal.GetDriverByName('Gtiff') #Output Driver    
     outTif =  driver.CreateCopy( outTifPath, inBil, 0 )    
-
 
     #Properly close the datasets to flush to disk
     inBil = None
@@ -1118,11 +1099,7 @@ def histo(input1,inBins=100, inRange=None, inNormed=False, inWeights=None, inDen
         array = singleTifToArray(input1)
     else:
         array = input1
-    
-    #if noDataValue == None:
-    #    array2 = array
-    #    pixNum = array2.size
-    #else:
+
     array2 = ma.masked_values(array, NoDataValue)
     pixNum = array2.count() #size on masked arrays would still return masked pixels
     
@@ -1155,442 +1132,3 @@ def histo(input1,inBins=100, inRange=None, inNormed=False, inWeights=None, inDen
     #return total pix number, masked pix number, and tuple of histogram array    
     return array2.size,pixNum, h
     
-    
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#########################################################################################
-#########################################################################################
-#########################################################################################
-#THE FOLLOWING ARE NOT WORKING PROPERLY OR AS INTENDED OR ARE OLD VERSIOND
-#########################################################################################
-#########################################################################################
-#########################################################################################
-
-
-#########################################################################################
-# Old linear regression script
-#########################################################################################
-
-# For small number of rasters with few pixels almost as fast as new version though
-
-#calculate linear regression and Mannn-Kendall-pValue coefficients for each raster coordinate
-#Slow mostly due to the Mann-Kendall-Testing
-def linRegOLD(inList):
-    
-    startTime = datetime.datetime.now()    
-    
-    #inList is a list of input arrays
-    #initialise empty arrays to be filled by output values
-    slopeAr,intcptAr,rvalAr,pvalAr,stderrAr,mkPAr = [np.zeros(inList[0].shape) for _ in range(6)]
-
-    
-    #equally spaced time steps by length of inList
-    timeList = np.asarray(list(range(len(inList))))
-    
-    #stack input arrays to make a 3D array
-    dstack = np.dstack((inList))
-
-    
-    for yCo in range(inList[0].shape[0]):
-        for xCo in range(inList[0].shape[1]):
-            
-            slope, intcpt, rval, pval, stderr = scipy.stats.linregress(timeList,
-                                                                       dstack[yCo][xCo])
-            mkVal = mk_test(dstack[yCo][xCo])
-
-
-            
-            #if yCo%100 == 0 and xCo == 0:
-            printStatement = "yCo / xCo: " + str(yCo) + "/" + str(xCo) + ","
-            print(printStatement, end="\r") #last \r is carriage return to overwrite line
-            
-            slopeAr[yCo,xCo] = slope
-            intcptAr[yCo,xCo] = intcpt
-            rvalAr[yCo,xCo] = rval
-            pvalAr[yCo,xCo] = pval
-            stderrAr[yCo,xCo] = stderr
-            
-            mkPAr[yCo,xCo] = mkVal[1]
-            
-            
-            
-            
-    outTuple = (slopeAr, intcptAr, rvalAr, pvalAr, stderrAr, mkPAr)
-    
-    endTime = datetime.datetime.now()
-    timedelta = endTime - startTime
-    timedeltaSec = timedelta.seconds + timedelta.microseconds/1000000
-    print("Process took", timedeltaSec, "seconds")
-
-    
-    return outTuple
-
-#########################################################################################
-# Old slow Mann-Kendall-Script
-#########################################################################################
-
-#Mann-Kendall-Test
-###Gefunden auf: http://www.ambhas.com/codes/statlib.py
-def mk_testOLD(x, alpha = 0.05):
-    """
-    this perform the MK (Mann-Kendall) test to check if the trend is present in 
-    data or not
-    
-    Input:
-        x:   a vector of data
-        alpha: significance level
-    
-    Output:
-        h: True (if trend is present) or False (if trend is absence)
-        p: p value of the sifnificance test
-        
-    Examples
-    --------
-      >>> x = np.random.rand(100)
-      >>> h,p = mk_test(x,0.05)  # meteo.dat comma delimited
-    """
-    n = len(x)
-    
-    # calculate S 
-    s = 0
-    for k in range(n-1):
-        for j in range(k+1,n):
-            s += np.sign(x[j] - x[k])
-    
-    # calculate the unique data
-    unique_x = np.unique(x)
-    g = len(unique_x)
-    
-    # calculate the var(s)
-    if n == g: # there is no tie
-        var_s = (n*(n-1)*(2*n+5))/18
-    else: # there are some ties in data
-        tp = np.zeros(unique_x.shape)
-        for i in range(len(unique_x)):
-            tp[i] = sum(unique_x[i] == x)
-        var_s = (n*(n-1)*(2*n+5) + np.sum(tp*(tp-1)*(2*tp+5)))/18
-    
-    if s>0:
-        z = (s - 1)/np.sqrt(var_s)
-    elif s == 0:
-            z = 0
-    elif s<0:
-        z = (s + 1)/np.sqrt(var_s)
-    
-    # calculate the p_value
-    p = 2*(1-scipy.stats.norm.cdf(abs(z))) # two tail test
-    h = abs(z) > scipy.stats.norm.ppf(1-alpha/2) 
-    
-    
-    return h, p
-
-#########################################################################################
-# Calculate smallest common extent of 2 rasters
-#########################################################################################
-
-
-def shared_Extent(input1,input2):
-    
-    #test if input is a string (filepath) or already gdal Dataset
-    if type(input1) == str:
-        gd1 = gdal.Open(input1, GA_ReadOnly)
-    else:
-        gd1 = input1
-    
-    if type(input2) == str:
-        gd2 = gdal.Open(input2, GA_ReadOnly)
-    else:
-        gd2 = input2
-
-    #Calculate the extent of both datasets in their original coordinate system
-    extent1 = GetExtent(gd1)
-    extent2 = GetExtent(gd2)
-    
-    #Extract projection information of both datasets
-    proj1 = osr.SpatialReference()
-    proj1.ImportFromWkt(gd1.GetProjectionRef())
-    proj2 = osr.SpatialReference()
-    proj2.ImportFromWkt(gd2.GetProjectionRef())
-    
-    #If the coordinate system is different, extent from second is recalculated to first
-    if proj1 != proj2:
-        extent2_new = ReprojectCoords(extent2,proj2,proj1)
-    else:
-        extent2_new = extent2
-    
-    intersect = my_intersect(gd1,gd2)
-
-
-
-#########################################################################################
-# Reproject Raster between Datasets (changed from reproject_dataset_2() )
-#########################################################################################
-
-##Input:
-# 2 datasets: first to be projected, second to use reference system from
-##Output
-# In-memory gdal raster file
-
-def reproject_dataset2 ( dataset1, dataset2 ):
-    
-    #test if input is a string (filepath) or already gdal Dataset
-    if type(dataset1) == str:
-        gd1 = gdal.Open(dataset1, GA_ReadOnly)
-    else:
-        gd1 = dataset1
-    
-    if type(dataset2) == str:
-        gd2 = gdal.Open(dataset2, GA_ReadOnly)
-    else:
-        gd2 = dataset2
-    
-    # Extract their coordinate systems    
-    old_proj = osr.SpatialReference()
-    old_proj.ImportFromWkt(gd1.GetProjectionRef())
-    old_Name = old_proj.GetAttrValue("UNIT")
-    
-    new_proj = osr.SpatialReference()
-    new_proj.ImportFromWkt(gd2.GetProjectionRef())
-    new_Name = new_proj.GetAttrValue("UNIT")
-    
-    #Define coordinate system transformation direction
-    tx = osr.CoordinateTransformation ( old_proj, new_proj )
-    
-    
-    # Get the Geotransform vector
-    old_geoT = gd1.GetGeoTransform()
-    old_pixel_spacing = old_geoT[1]
-    x_size = gd1.RasterXSize # Raster xsize
-    y_size = gd1.RasterYSize # Raster ysize
-    
-    
-    
-    #Recalculate pixel spacing when coordinates use different units
-    meterList = ["meter", "metre", "Meter", "Metre"]  
-    degreeList = ["Degree", "degree", "deg", "Deg", "degs", "Degs"]
-    Radius = (UTMproj.GetSemiMajor() + UTMproj.GetSemiMinor()) / 2
-    
-    if old_Name == new_Name:
-            pixel_spacing = old_pixel_spacing
-    elif (old_Name in meterList) and (new_Name in degreeList):  #Meter to degrees
-        northUTM = old_geoT[3] 
-        southUTM = old_geoT[3] - y_size * old_pixel_spacing
-        meanUTM = (northDegree + southDegree) / 2
-        #zone = UTMproj.GetUTMZone()
-        zone = UTMproj.GetAttrValue("PROJCS")[-3:]        
-        yDegs = UTMconv.UTMtoLL(23, meanUTM, 500000, zone) #converts UTM to lat/lon
-        rPhi = Radius * math.cos(math.radians(yDegs[0]))
-        
-        pixel_spacing = (old_pixel_spacing * 360) / (2 * rPhi * math.pi)
-        
-       
-    elif (old_Name in degreeList) and (new_Name in meterList):  #Degrees to Meter
-        northDegree = old_geoT[3]   
-        southDegree = old_geoT[3] - y_size * old_pixel_spacing
-        meanDegree = (northDegree + southDegree) / 2
-        rPhi = Radius * math.cos(math.radians(meanDegree))        
-        pixel_spacing = 2 * rPhi * math.pi * (old_pixel_spacing / 360)
-    
-    else:
-        print("Units", old_Name, " or ", new_Name , " not supported")
-
-    
-    # Work out the boundaries of the new dataset in the target projection
-    (ulx, uly, ulz ) = tx.TransformPoint( old_geoT[0], old_geoT[3])
-    (lrx, lry, lrz ) = tx.TransformPoint( old_geoT[0] +old_geoT[1]*x_size, \
-                                          old_geoT[3] + old_geoT[5]*y_size )
-        
-    
-    #Define new in-memory dataset
-    mem_drv = gdal.GetDriverByName( 'MEM' )
-    
-    dest = mem_drv.Create('', int((lrx - ulx)/pixel_spacing), \
-            int((uly - lry)/pixel_spacing), 1, gdal.GDT_Float32)
-    
-    # Calculate the new geotransform
-    new_geo = ( ulx, pixel_spacing, old_geoT[2], \
-                uly, old_geoT[4], -pixel_spacing )
-    
-    dest.SetGeoTransform( new_geo )
-    dest.SetProjection ( new_proj.ExportToWkt() )
-    
-    res = gdal.ReprojectImage( gd1, dest, \
-                old_proj.ExportToWkt(), new_proj.ExportToWkt(), \
-                gdal.GRA_Bilinear )
-    
-    return dest
-    
-    #To save raster as tif, use
-    #tif_drv = gdal.GetDriverByName('GTiff')
-    #tif_drv.CreateCopy( outFile, memory_file )
-
-
-
-#########################################################################################
-# Reproject Raster in Memory with new pixel spacing
-#########################################################################################
-#http://jgomezdans.github.io/gdal_notes/reprojection.html
-
-
-def reproject_dataset3 ( dataset, \
-            pixel_spacing=5000., epsg_from=4326, epsg_to=27700 ):
-    """
-    A sample function to reproject and resample a GDAL dataset from within 
-    Python. The idea here is to reproject from one system to another, as well
-    as to change the pixel size. The procedure is slightly long-winded, but
-    goes like this:
-    
-    1. Set up the two Spatial Reference systems.
-    2. Open the original dataset, and get the geotransform
-    3. Calculate bounds of new geotransform by projecting the UL corners 
-    4. Calculate the number of pixels with the new projection & spacing
-    5. Create an in-memory raster dataset
-    6. Perform the projection
-    """
-    # Define the UK OSNG, see <http://spatialreference.org/ref/epsg/27700/>
-    osng = osr.SpatialReference ()
-    osng.ImportFromEPSG ( epsg_to )
-    wgs84 = osr.SpatialReference ()
-    wgs84.ImportFromEPSG ( epsg_from )
-         
-    tx = osr.CoordinateTransformation (wgs84, osng)
-    # Up to here, all  the projection have been defined, as well as a 
-    # transformation from the from to the  to :)
-    # We now open the dataset
-    if type(dataset1) == str:
-        g = gdal.Open(dataset, GA_ReadOnly)
-    else:
-        g = dataset
-    # Get the Geotransform vector
-    geo_t = g.GetGeoTransform ()
-    x_size = g.RasterXSize # Raster xsize
-    y_size = g.RasterYSize # Raster ysize
-    # Work out the boundaries of the new dataset in the target projection
-    (ulx, uly, ulz ) = tx.TransformPoint( geo_t[0], geo_t[3])
-    (lrx, lry, lrz ) = tx.TransformPoint( geo_t[0] + geo_t[1]*x_size, \
-                                          geo_t[3] + geo_t[5]*y_size )
-                                          
-    # See how using 27700 and WGS84 introduces a z-value!
-    # Now, we create an in-memory raster
-    mem_drv = gdal.GetDriverByName( 'MEM' )
-    # The size of the raster is given the new projection and pixel spacing
-    # Using the values we calculated above. Also, setting it to store one band
-    # and to use Float32 data type.
-    dest = mem_drv.Create('', int((lrx - ulx)/pixel_spacing), \
-            int((uly - lry)/pixel_spacing), 1, gdal.GDT_Float32)
-    # Calculate the new geotransform
-    new_geo = ( ulx, pixel_spacing, geo_t[2], \
-                uly, geo_t[4], -pixel_spacing )
-    # Set the geotransform
-    dest.SetGeoTransform( new_geo )
-    dest.SetProjection ( osng.ExportToWkt() )
-    # Perform the projection/resampling 
-    gdal.ReprojectImage( g, dest, wgs84.ExportToWkt(), osng.ExportToWkt(), \
-                gdal.GRA_Bilinear )
-    return dest
-
-
-#########################################################################################
-
-
-
-
-#########################################################################################
-#########################################################################################
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#OLD 
-
-#FUNCTION ONLY WORKS IN THIS FORM WITH INTEGER VALUES, AS IT USES BITWISE OR
-#HOWEVER IT IS MORE FLEXIBLE AND SUPPORTS UP TO 32 ARRAYS
-#MIGHT BE BUGGY
-
-#Return from several arrays one array with the respective largest value at 
-#each position
-#very important to use brackets around tuple items (inA[x]) as results will be
-#strange if not done
-
-'''
-def getLargValInt(*inA):
-    inputlen = len(inA) 
-
-    #Build expressions as string, depening on number of input arrays
-    conTxT = ''
-    choiTxT = ''
-    for i in range(0,inputlen-1):
-        #conTxT = conTxT + ', inA[' +str(i)+ '] > inA[' +str(i+1)+ ']'
-        conTxT = conTxT + 'inA[' + str(i) + '] > inA[' + str(i+1) + ']'
-        for j in range(i+2,inputlen):
-            conTxT = conTxT + '|inA[' +  str(j) + ']'
-            
-        if i != inputlen-1:
-            conTxT = conTxT + ", "
-      
-        choiTxT = choiTxT + '(inA[' +str(i)+ '])'
-        if i != inputlen-1:
-            choiTxT = choiTxT + ", "
-
-    
-    #After expressions are buildt as text, they are executed as code
-    execConTxt = 'condlist = [' + conTxT + ']'
-    execChoiTxt = 'choicelist = [' + choiTxT + ']'
-    
-    #In Python 3 there is a bit of a "problem" with the local variables
-    #created by the exec function i.e. an error is raised if only    
-    #exec(execConTxt) would follow. Thus local variables have to be stored
-    #explicitely in ldict
-    #http://stackoverflow.com/questions/1463306/how-does-exec-work-with-locals
-    
-    ldict = locals()
-    
-    exec(execConTxt,globals(),ldict)
-    condlist = ldict['condlist']
-    
-    exec(execChoiTxt,globals(),ldict)
-    choicelist = ldict['choicelist']
-   
-    result = np.select(condlist, choicelist, inA[inputlen-1])
-    return result  
-'''

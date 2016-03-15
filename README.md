@@ -5,9 +5,22 @@ Last tested (March 2016) with [GDAL 2.0.2](http://www.gisinternals.com/query.htm
 
 Functions.py is needed by many of these scripts, as it contains basic functions repeatedly required
 
+
+### Functions.py
+
+Crucial file as many of the other scripts call functions from within, so be sure to put it in the *PYTHONPATH*   
+
+Includes:
+* **chkdir** and **chkdir2** handles directory checking, deletion and creation
+* **getLargVal** multiple same dimension arrays are the input -- output is one array with the largest respective value at each data point
+
+
 ### MiniScripts.py
 
-A collection of small scripts including:
+
+A collection of small scripts. In contrast to Functions.py these are mostly run on their own and are not called from other scripts.
+
+Includes:
 * conversion of a folder of HDF files to the GeoTiff format
 * handling of nested zip files (specific for data from www.vito-eodata.be)
 * copy the content of many folders into one (useful when data is packed in folder by month, though all monthly files are required to be in one folder)

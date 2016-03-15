@@ -22,7 +22,7 @@ Includes:
 * **mk_test** calculates the Mann-Kendall trend test and returns h and p value (originally adopted from http://www.ambhas.com/codes/statlib.py but changed 
 	to use numpy matrices and other minor changes -> script is now about 35x faster than the original)
 * **hdfTOtif** convert HDF files to GeoTiff format, quite specific to certain NDVI data, as DN values are converted to NDVI in the process
-* 'BILtoTIF' convert BIL files to GeoTiff format
+* ´BILtoTIF´ convert BIL files to GeoTiff format
 
 
 ### MiniScripts.py

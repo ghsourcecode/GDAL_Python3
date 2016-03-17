@@ -77,3 +77,11 @@ Converts 3D netCDF files (X,Y,Z = lon, lat, value) into multiple single GeoTiff 
 Extent and pixel size must be manually changed, all else is extracted automatically.   
 The script returns files that are numbered in continuous order (*1.tif, 2.tif, 3.tif...*)
 
+
+### trend_stats.py
+
+Uses the input of annual rasters (inFol) and monthly rasters stored in sub-folders by month in inFol2. Returns pixel based coefficients from the 
+linear regression on a monthly and annual basis
+
+
+

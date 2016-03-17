@@ -7,13 +7,13 @@ import numpy as np
 # uses the output from the monthly combinations (best_Reg.py) and returns the best
 # combation at each pixel location
 
-#Input Folder containing mont combinations as in 12345.tif for Jan-Feb-Mar-Apr-May
-inFol = "D:/Test/NDVI_SPOT_MONGOLIA/OutStats_AllReg/"
-outFol = "D:/Test/NDVI_SPOT_MONGOLIA/Test/Out/"
+#Input Folder containing monthly combinations as in 12345.tif for Jan-Feb-Mar-Apr-May
+inFol = ".../inFol/"
+outFol = ".../outFol/"
 
 
 
-def getLargVal(inFol,outFol,combDct):
+def getBestVal(inFol,outFol,combDct):
     endings = ("_slope.tif", "_intcp.tif", "_rval.tif", "_pval.tif", "_stderr.tif", "_mkP.tif")
     
     # Determine first raster, used for conversion from arrays to tif
@@ -146,7 +146,7 @@ def atLoc(mkNameFile,diction,inFol,outFol):
             funcs.array_to_raster(mkNameFile,outArray, outFol+"rval_MK_name_sig2.tif")
                 
             
-#VERY INEFFICIENT:
+#VERY INEFFICIENT -> deprecated:
 #iterate over the best_pix Names of Mann Kendall and extract the rvals... of this combination
 #return as own raster
 #mkNameFile is the Mann-Kendall file to iterate over, inFol contains the rval rasters, 
@@ -171,22 +171,13 @@ def atLoc2(mkNameFile,diction,inFol,outFol,noData):
                 readArray = funcs.singleTifToArray(inFol + str(longNum)+"_rval.tif") 
                 
                 newArray[yCo][xCo] = readArray[yCo][xCo]
-                
-                #count2 = count2 + 1
-                #if count%10000 == 0:
-                #    print(count2, " successes, last file was")
             
             except:
                 newArray[yCo][xCo] = noData
-                count = count+1
-                #if count%10000 == 0:
-                #    print(count, " excpetions thrown")
                 
     funcs.array_to_raster(mkNameFile,newArray,outFol+"rval_MK_name_sig.tif")            
             
-            
-            
-    
+          
 
 #rval files are used to create the month combinations contained in the filename
 combLst = []
@@ -211,19 +202,20 @@ for x,y in zip(combLst, range(1,len(combLst)+1)):
     infoTxt.write(str(y) + "    " + str(x) + "\n")
 infoTxt.close()
 
-#getLargVal(inFol,outFol,combDct)
+getBestVal(inFol,outFol,combDct)
 
-#The following can be used independently of the steps above
+
+# The following can be used independently of the steps above
 # It looks at the month combination of best MK and saves the corresponding rvals in a raster
-#Like combDct but keys and values are switched
+# Like combDct but keys and values are switched
 invcombDct = {}
 for y,x in zip(combLst, range(1,len(combLst)+1)):
     invcombDct[x] = y
 
 
-mkNameFile = "D:/Test/NDVI_SPOT_MONGOLIA/OutStats_Best_AllReg/name__mkP.tif"
-inFol2 = "D:/Test/NDVI_SPOT_MONGOLIA/OutStats_AllReg/"
-outFol2 = "D:/Test/NDVI_SPOT_MONGOLIA/OutStats_Best_AllReg/"
+mkNameFile = ".../name__mkP.tif"
+inFol2 = ".../inFol/"
+outFol2 = "/outFol/"
 noData = -3.4028231e+38
 test = atLoc(mkNameFile,combDct,inFol2,outFol2) 
 

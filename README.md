@@ -5,6 +5,19 @@ Last tested (March 2016) with [GDAL 2.0.2](http://www.gisinternals.com/query.htm
 
 Functions.py is needed by many of these scripts, as it contains basic functions repeatedly required
 
+
+### best_Comb.py
+
+Uses the files created by best_Reg.py and returns a value for each pixel that represents the *best* monthly combination
+
+Largest values are returned for linear regression p-Value, r-Value and Mann-Kendall p-Value.   
+Smallest values are returned for linear regression slope, intercept, standard error and additionally r-value
+
+The script assigns a shorter integer (i) to each month combination (e.g. 101112 for Oct,Nov,Dec is value 23). This assignment depends on the number of
+month combinations used and may vary as such. Therefore an *_Info.txt* files is created, storing the relation between each i and original month combination.
+
+The i is the value that represents the best month combination in the output rasters.
+
 ### best_Reg.py
 
 Input is a folder containing monthly rasters potentially spanning over several years (file naming scheme: 1999_03.tif)
@@ -54,7 +67,7 @@ Includes:
 * inverse case, copy content of one folder to many (here specifically monthly folders)
 * rename files (first to last) to fit the *Year_Month.tif* format used in some of the other scripts
 * convert BIL files in ZIP archives to GeoTiffs
-* change a number string representing months into month names
+* change a number string representing months into month names (number strings may be a result of *best_Comb.py*)
 
 
 ### netCDFtoTiff.py

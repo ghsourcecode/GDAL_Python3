@@ -171,7 +171,28 @@ for zipFile in os.listdir(inFol):               #iterate through zip Files in fo
             os.remove(file_path)
         
         print(zipFile, " done")
-                  
+
+
+
+###############################################################################
+# Combine several txt files into one
+############################################################################### 
+
+import os
+
+inFol = ".../inFol/" # contains many singly .txt files
+outFile = ".../Output.txt" # merged txt files
+
+w = open(outFile, 'a')
+
+for x in os.listdir(inFol):
+    r = open(inFol+x, 'r')
+    txt = r.read()
+    w.write(txt)
+    w.write('\n')
+    r.close()
+
+w.close()                  
 
 
 ###############################################################################

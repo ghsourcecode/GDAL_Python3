@@ -2,11 +2,7 @@
 
 #Collection of small scripts
 
-import os, shutil, zipfile
-import gdal
-from gdalconst import *
 
-import Functions as funcs
 
 
 ###############################################################################
@@ -14,6 +10,9 @@ import Functions as funcs
 ###############################################################################
 
 #convert NDVI HDF rasters to GeoTiffs using hdfTOtif
+
+import os
+import Functions as funcs
 
 #define input and output folder
 inFol = ".../in/"
@@ -33,6 +32,8 @@ for filex in os.listdir(inFol):
 
 #extract (nested) zip files in many folders into one
 #very specific for data from www.vito-eodata.be
+
+import os, zipfile
 
 inFol = ".../In/"
 outFol = ".../Out/"
@@ -64,6 +65,8 @@ for folds in os.listdir(inFol):
 
 #in this folder are many folders, all files will be copied into the outer Folder
 
+import os, shutil
+
 inFol = '/in/'
 
 for fols in os.listdir(inFol):
@@ -79,6 +82,8 @@ for fols in os.listdir(inFol):
 #copy monthly files that are in one folder (e.g. OutMonth) into monthly folders
 #(01_Jan 02_Feb etc.) within this first folder. Input files should be in the form
 #1999_01.tif
+
+import os, shutil
             
 inFol =  '/in/'
 
@@ -118,6 +123,8 @@ for moNum,moName in zip(monthNum,monthName):
 
 #Rename data from first to last in folder to Year_Month.tif notation     
 #Input FIles must be numbered from 1.tif to x.tif...
+
+import os
                    
 inFol = ".../in/"
 startYear = 1999    #First year of data input
@@ -147,6 +154,9 @@ for yeari in range(startYear,endYear+1):
 
 # When you accidentally downloaded a couple hundred SRTM scenes from earthexplorer.usgs.gov/
 # just to realize you did not change the format to GeoTiff
+
+import os, zipfile
+import Functions as funcs
 
 inFol = ".../BIL_SRTM_Original/"
 outFol = ".../Single_TIFF_SRTM/"

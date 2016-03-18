@@ -1131,4 +1131,35 @@ def histo(input1,inBins=100, inRange=None, inNormed=False, inWeights=None, inDen
     
     #return total pix number, masked pix number, and tuple of histogram array    
     return array2.size,pixNum, h
-    
+
+
+#########################################################################################
+# Create a mask from vector and convert vectors to raster
+#########################################################################################
+
+'''adopted form http://www.machinalis.com/blog/python-for-geospatial-data-processing/'''
+
+def create_mask_from_vector(vector_data_path, cols, rows, geo_transform,
+                            projection, target_value=1):
+    """Rasterize the given vector (wrapper for gdal.RasterizeLayer)."""
+    data_source = gdal.OpenEx(vector_data_path, gdal.OF_VECTOR)
+    layer = data_source.GetLayer(0)
+    driver = gdal.GetDriverByName('MEM')  # In memory dataset
+    target_ds = driver.Create('', cols, rows, 1, gdal.GDT_UInt16)
+    target_ds.SetGeoTransform(geo_transform)
+    target_ds.SetProjection(projection)
+    gdal.RasterizeLayer(target_ds, [1], layer, burn_values=[target_value])
+    return target_ds
+
+
+def vectors_to_raster(file_paths, rows, cols, geo_transform, projection):
+    """Rasterize the vectors in the given directory in a single image."""
+    labeled_pixels = np.zeros((rows, cols))
+    for i, path in enumerate(file_paths):
+        label = i+1
+        ds = create_mask_from_vector(path, cols, rows, geo_transform,
+                                     projection, target_value=label)
+        band = ds.GetRasterBand(1)
+        labeled_pixels += band.ReadAsArray()
+        ds = None
+    return labeled_pixels

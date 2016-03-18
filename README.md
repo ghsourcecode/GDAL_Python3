@@ -1,5 +1,5 @@
 # GDAL_Python3
-Open Source (geographic) data handling scripts, written in Python 3.4 and 3.5
+Open Source (geographic) data handling scripts, written in Python 3.4 and 3.5 with a focus on time series analysis
 
 Last tested (March 2016) with [GDAL 2.0.2](http://www.gisinternals.com/query.html?content=filelist&file=release-1800-x64-gdal-1-11-3-mapserver-6-4-2.zip)
 
@@ -19,6 +19,8 @@ month combinations used and may vary as such. Therefore an *_Info.txt* files is 
 The i is the value that represents the best month combination in the output rasters.
 
 ### best_Reg.py
+
+Calculate pixel-based linear regressions for many different month/season combinations
 
 Input is a folder containing monthly rasters potentially spanning over several years (file naming scheme: 1999_03.tif)
 Script calculates pixel-based linear regressions for many different month/season combinations. 

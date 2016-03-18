@@ -67,6 +67,7 @@ Includes:
 * inverse case, copy content of one folder to many (here specifically monthly folders)
 * rename files (first to last) to fit the *Year_Month.tif* format used in some of the other scripts
 * convert BIL files in ZIP archives to GeoTiffs
+* Text file merging
 * change a number string representing months into month names (number strings may be a result of *best_Comb.py*)
 
 

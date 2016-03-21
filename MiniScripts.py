@@ -15,14 +15,19 @@ import os
 import Functions as funcs
 
 #define input and output folder
-inFol = ".../in/"
-outFol = "/OutTiffs/"
+inFol = ".../inFol/"
+outFol = ".../outFol/"
+
+# number of HDF sub dataset, 0 is default
+subset = 1
 
 for filex in os.listdir(inFol):
-    extent = [800,2300,300,2500]
-    nameHDF = inFol + filex
-    outFile = outFol + filex[:-3] + "tif"
-    funcs.hdfTOtif(nameHDF,outFile,extent) # Functions.py needed
+    print(filex)
+    if filex[-3:] == "hdf":
+        extent = [0,0,0,0]
+        nameHDF = inFol + filex
+        outFile = outFol + filex[:-3] + "tif"
+        funcs.hdfTOtif(nameHDF,outFile,subset,extent) # Functions.py needed
 
 
 

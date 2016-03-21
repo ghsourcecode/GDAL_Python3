@@ -706,18 +706,38 @@ def mk_test(x, alpha = 0.05):
 #hdf to tiff
 #########################################################################################
 
-#convert hdf files to tiffs, 
-#slicing is the number of pixels that will be kept from original input
-#[xmin,xmax,ymin,ymax]
+"""
+convert hdf files to tiffs, 
 
-def hdfTOtif(nameHDF,outFile, slicing = [0,0,0,0], projName = "EPSG:4326"):
+subset is the number of the raster subset (0 is default)
+
+slicing is the number of pixels that will be kept from original input [xmin,xmax,ymin,ymax]
+
+(0) during conversion, scaling can be applied (e.g. from DN to NDVI, LAI etc.)
+
+Script is still not fully automatic:
+   (1) pixel size must be given manually
+   (2) x_min and y_max coordinates must be given manually
+   (3) activate to create coordinate system manually
+   (4) activate to extract coordinate system automatically (disable (3) then)
+"""
+
+def hdfTOtif(nameHDF, outFile, subset=0, slicing = [0,0,0,0]):
 
     driver = gdal.GetDriverByName('hdf4')
     driver2 = gdal.GetDriverByName('Gtiff')
     driver.Register()
     driver2.Register()
     
-    inHDF = gdal.Open(nameHDF, GA_ReadOnly)
+    # open Dataset
+    inDS = gdal.Open(nameHDF, GA_ReadOnly)
+    
+    # extract the subset to convert
+    inHDF = gdal.Open(inDS.GetSubDatasets()[subset][0], GA_ReadOnly)
+    
+    # extract Projection
+    exProj = inHDF.GetProjectionRef() # (4)
+    
     cols = inHDF.RasterXSize
     rows = inHDF.RasterYSize
     
@@ -735,31 +755,34 @@ def hdfTOtif(nameHDF,outFile, slicing = [0,0,0,0], projName = "EPSG:4326"):
         y_Start = slicing[2]
         y_End = slicing[3]
 
-    
     #array = numpy.delete(array, np.s_[0:2500], axis=1)   
-    array = array[y_Start:y_End,x_Start:x_End]    
-    array = array * 0.004 - 0.08 #DN values to NDVI  
+    array = array[y_Start:y_End,x_Start:x_End]
+    
+    #array = array * 0.1    # (0) Use this for scaling
     
     
-    PIXEL_SIZE = 0.0089285714
-    x_min = 91.9910714286 + x_Start * PIXEL_SIZE #if sliced, needs be updated
-    y_max = 29.0089285714 - y_Start * PIXEL_SIZE
+    PIXEL_SIZE = 926.625433055556                 # (1)
     
-    proj = osr.SpatialReference()
-    proj.SetWellKnownGeogCS( projName ) #Get the long coordinate system name
-    wkt_projection = proj.ExportToWkt()
+    #  if slicing happens, xmin and ymax need updating
+    x_min = 11119505.1967 + x_Start * PIXEL_SIZE  # (2) 
+    y_max = 2223901.03933 - y_Start * PIXEL_SIZE  # (2)
+    
+    #proj = osr.SpatialReference()          # (3)
+    #proj.SetWellKnownGeogCS( "EPSG:4326" ) # (3) Get the long coordinate system name
+    #proj.SetUTM(48, True)                  # (3) Add UTM information, True = North
+    #wkt_projection = proj.ExportToWkt()    # (3) export both to Wkt
     
     x_pixels = array.shape[1]
     y_pixels = array.shape[0]
 
-    #wkt_projection = 'EPSG: 4326'
-    
+  
     outDataset = driver2.Create(
             outFile,
             x_pixels,
             y_pixels,
             1,
-            gdal.GDT_Float32, )
+            gdal.GDT_Byte,)     # for 8-bit unsigned integer output
+            #gdal.GDT_Float32, )
     
     outDataset.SetGeoTransform((
             x_min,    # 0
@@ -769,11 +792,11 @@ def hdfTOtif(nameHDF,outFile, slicing = [0,0,0,0], projName = "EPSG:4326"):
             0,                      # 4
             -PIXEL_SIZE))  
     
-    outDataset.SetProjection(wkt_projection)
+    
+    #outDataset.SetProjection(wkt_projection) # (3)
+    outDataset.SetProjection(exProj)          # (4)
     outDataset.GetRasterBand(1).WriteArray(array)
     outDataset.FlushCache()  # Write to disk.
-
-
 
 #########################################################################################
 #BIL to Tiff
@@ -1137,7 +1160,7 @@ def histo(input1,inBins=100, inRange=None, inNormed=False, inWeights=None, inDen
 # Create a mask from vector and convert vectors to raster
 #########################################################################################
 
-'''adopted form http://www.machinalis.com/blog/python-for-geospatial-data-processing/'''
+'''adopted from http://www.machinalis.com/blog/python-for-geospatial-data-processing/'''
 
 def create_mask_from_vector(vector_data_path, cols, rows, geo_transform,
                             projection, target_value=1):

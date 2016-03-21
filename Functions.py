@@ -720,6 +720,7 @@ Script is still not fully automatic:
    (2) x_min and y_max coordinates must be given manually
    (3) activate to create coordinate system manually
    (4) activate to extract coordinate system automatically (disable (3) then)
+   (5) change output DataType (allowed types: http://www.gdal.org/gdal_8h.html)
 """
 
 def hdfTOtif(nameHDF, outFile, subset=0, slicing = [0,0,0,0]):
@@ -781,7 +782,7 @@ def hdfTOtif(nameHDF, outFile, subset=0, slicing = [0,0,0,0]):
             x_pixels,
             y_pixels,
             1,
-            gdal.GDT_Byte,)     # for 8-bit unsigned integer output
+            gdal.GDT_Byte,)     # (5) for 8-bit unsigned integer output
             #gdal.GDT_Float32, )
     
     outDataset.SetGeoTransform((

@@ -4,7 +4,7 @@ import gdal, os, scipy
 from gdalconst import *
 
 import numpy as np
-import scipy.ndimage
+import scipy.ndimage, scipy.stats
 import numpy.ma as ma
 
 import osr, datetime
@@ -734,10 +734,13 @@ def hdfTOtif(nameHDF, outFile, subset=0, slicing = [0,0,0,0]):
     inDS = gdal.Open(nameHDF, GA_ReadOnly)
     
     # extract the subset to convert
-    inHDF = gdal.Open(inDS.GetSubDatasets()[subset][0], GA_ReadOnly)
+    try:
+        inHDF = gdal.Open(inDS.GetSubDatasets()[subset][0], GA_ReadOnly)
+    except:
+        inHDF = inDS
     
     # extract Projection
-    exProj = inHDF.GetProjectionRef() # (4)
+    #exProj = inHDF.GetProjectionRef() # (4)
     
     cols = inHDF.RasterXSize
     rows = inHDF.RasterYSize
@@ -748,8 +751,8 @@ def hdfTOtif(nameHDF, outFile, subset=0, slicing = [0,0,0,0]):
     if slicing[0] == 0 and slicing[1] == 0 and slicing[2] == 0 and slicing[3] == 0:
         x_Start = 0
         y_Start = 0
-        x_End = rows
-        y_End = cols
+        x_End = cols
+        y_End = rows
     else:
         x_Start = slicing[0]
         x_End = slicing[1]        
@@ -759,31 +762,31 @@ def hdfTOtif(nameHDF, outFile, subset=0, slicing = [0,0,0,0]):
     #array = numpy.delete(array, np.s_[0:2500], axis=1)   
     array = array[y_Start:y_End,x_Start:x_End]
     
-    #array = array * 0.1    # (0) Use this for scaling
+    array = array * 0.0005    # (0) Use this for scaling
     
     
-    PIXEL_SIZE = 926.625433055556                 # (1)
+    PIXEL_SIZE = 0.0089285714                # (1)
     
     #  if slicing happens, xmin and ymax need updating
-    x_min = 11119505.1967 + x_Start * PIXEL_SIZE  # (2) 
-    y_max = 2223901.03933 - y_Start * PIXEL_SIZE  # (2)
-    
-    #proj = osr.SpatialReference()          # (3)
-    #proj.SetWellKnownGeogCS( "EPSG:4326" ) # (3) Get the long coordinate system name
+    x_min = 68.0 + x_Start * PIXEL_SIZE  # (2) 
+    y_max = 55.0 - y_Start * PIXEL_SIZE  # (2)
+     
+    proj = osr.SpatialReference()          # (3)    
+    proj.SetWellKnownGeogCS( "EPSG:32662" ) # (3) Get the long coordinate system name
     #proj.SetUTM(48, True)                  # (3) Add UTM information, True = North
-    #wkt_projection = proj.ExportToWkt()    # (3) export both to Wkt
+    wkt_projection = proj.ExportToWkt()    # (3) export both to Wkt
     
     x_pixels = array.shape[1]
     y_pixels = array.shape[0]
-
-  
+      
     outDataset = driver2.Create(
             outFile,
             x_pixels,
             y_pixels,
             1,
-            gdal.GDT_Byte,)     # (5) for 8-bit unsigned integer output
-            #gdal.GDT_Float32, )
+            #gdal.GDT_Int16,)
+            #gdal.GDT_Byte,)     # (5) for 8-bit unsigned integer output
+            gdal.GDT_Float32, )
     
     outDataset.SetGeoTransform((
             x_min,    # 0
@@ -794,8 +797,8 @@ def hdfTOtif(nameHDF, outFile, subset=0, slicing = [0,0,0,0]):
             -PIXEL_SIZE))  
     
     
-    #outDataset.SetProjection(wkt_projection) # (3)
-    outDataset.SetProjection(exProj)          # (4)
+    outDataset.SetProjection(wkt_projection) # (3)
+    #outDataset.SetProjection(exProj)          # (4)
     outDataset.GetRasterBand(1).WriteArray(array)
     outDataset.FlushCache()  # Write to disk.
 

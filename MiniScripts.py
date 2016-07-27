@@ -63,7 +63,8 @@ for folds in os.listdir(inFol):
 
 
 
-
+#extract (nested) zip files in many folders into one, use Red/NR bands to calculate SAVI, save SAVI file
+#very specific for RAD data from www.vito-eodata.be
 
 import os, zipfile
 import Functions as funcs
@@ -75,13 +76,9 @@ def SAVI(R,NIR,L=0.5):
     savi = savi.astype(np.float32)
     return savi
 
-#extract (nested) zip files in many folders into one, use Red/NR bands to calculate SAVI, save SAVI file
-#very specific for RAD data from www.vito-eodata.be
 inFol = "E:/Asien/SPOT_VGT_Rad_SE_Asia/"
 outFol = "D:/Projekte/Mongolia/NDVI_SPOT_MONGOLIA/SAVI_decades/"
 scratchFol = "D:/Test/NDVI_SPOT_MONGOLIA/Scratch/"
-
-
 
 for folds in os.listdir(inFol):
     for files in os.listdir(inFol+folds):

@@ -294,7 +294,7 @@ def linReg2(inList1,inList2,outFol=".../outFol/"):
     iType = 0 #input type, 0 is default means inputs are arrays
     
     #If input is tif raster, convert to array before further use
-    if type(inList1[0]) != numpy.ndarray:
+    if type(inList1[0]) != np.ndarray:
         iType = 1
         refRas1 = inList1[0]
         refRas2 = inList2[0]
@@ -383,7 +383,7 @@ def linReg2(inList1,inList2,outFol=".../outFol/"):
              (GetExtent(firstRasGDAL1) != GetExtent(firstRasGDAL2)):
            
             intersec = my_intersect(firstRasGDAL1,firstRasGDAL2)
-            gdalTranslate = r'C:\Program Files\GDAL\gdal_translate.exe'
+            gdalTranslate = r'C:\Program Files (x86)\IDRISI Selva\GDAL\bin\gdal_translate.exe'
             
             infoTxt.write("ELIF linReg2 invoked: Rasters share the same" + 
                            "Coordinate System but not the same extent \n" +
@@ -494,13 +494,15 @@ def linReg2(inList1,inList2,outFol=".../outFol/"):
     #Test if dimensions of both input array series are the same. If not, resize the smaller
     #one with zoom function
     #http://stackoverflow.com/questions/13242382/resampling-a-numpy-array-representing-an-image
+    size1 = list1[0].shape[0] * list1[0].shape[1]
+    size2 = list2[0].shape[0] * list2[0].shape[1]
+    
     if list1a[0].shape != list2a[0].shape:
 
         #set order for spline interpolation   
         splOrder = 3   
         
-        size1 = list1[0].shape[0] * list1[0].shape[1]
-        size2 = list2[0].shape[0] * list2[0].shape[1]
+
         
         infoTxt.write("Zoom function (scipy.ndimage.zoom) invoked because" +
                        "shape of arrays is list1 is " + 
@@ -729,6 +731,7 @@ def hdfTOtif(nameHDF, outFile, subset=0, slicing = [0,0,0,0]):
     driver2 = gdal.GetDriverByName('Gtiff')
     driver.Register()
     driver2.Register()
+    
     
     # open Dataset
     inDS = gdal.Open(nameHDF, GA_ReadOnly)
@@ -1143,7 +1146,7 @@ def histo(input1,inBins=100, inRange=None, inNormed=False, inWeights=None, inDen
         inBins = range(1,int(uniqueMax)+2)
     
     
-    h = numpy.histogram(array2.compressed(),bins=inBins, normed=inNormed, 
+    h = np.histogram(array2.compressed(),bins=inBins, normed=inNormed, 
                         weights=inWeights, density=inDensity)
     
     #Returns graphic histogram by standard

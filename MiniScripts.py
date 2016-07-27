@@ -36,9 +36,7 @@ for filex in os.listdir(inFol):
 ###############################################################################
 
 #extract (nested) zip files in many folders into one
-#very specific for data from www.vito-eodata.be
-
-import os, zipfile
+#very specific for NDVI data from www.vito-eodata.be
 
 inFol = ".../In/"
 outFol = ".../Out/"
@@ -62,7 +60,68 @@ for folds in os.listdir(inFol):
                     for k in os.listdir(outFol+i):
                         if k[:4] == "0001":
                             os.rename(outFol+i+"/"+k,outFol+i+"/"+folds[18:26]+".hdf")
+
+
+
+
+
+import os, zipfile
+import Functions as funcs
+import numpy as np
+
+def SAVI(R,NIR,L=0.5):
+    #LS8 = B4,B5    LS57 = B3,B4
+    savi = ((NIR-R) / (NIR + R + L)) * (1+L)
+    savi = savi.astype(np.float32)
+    return savi
+
+#extract (nested) zip files in many folders into one, use Red/NR bands to calculate SAVI, save SAVI file
+#very specific for RAD data from www.vito-eodata.be
+inFol = "E:/Asien/SPOT_VGT_Rad_SE_Asia/"
+outFol = "D:/Projekte/Mongolia/NDVI_SPOT_MONGOLIA/SAVI_decades/"
+scratchFol = "D:/Test/NDVI_SPOT_MONGOLIA/Scratch/"
+
+
+
+for folds in os.listdir(inFol):
+    for files in os.listdir(inFol+folds):
+        if files[-3:].lower() == "zip":
+            #zipName = inFol+"VGT_S10_V1KRNS10__19990101_RADIO_SE_Asia/SV04_VG1_S10___RM__19990101010212_19990110232810_CVB_000000_SE-Asia_V001.ZIP"
+            zipName = inFol+folds+"/"+files
+            zipped = zipfile.ZipFile(zipName, mode='r')
+            
+            for j in zipped.namelist():
+                if j[-7:].lower() in ["_b2.hdf", "_b3.hdf"]:
+                    zipped.extract(j, scratchFol, pwd=None)
+                    funcs.hdfTOtif(scratchFol + j, scratchFol + j[:-4] + ".TIF", subset=0, slicing=[1500,6500,0,2000])
+            
+            arrB2 = funcs.singleTifToArray("D:/Test/NDVI_SPOT_MONGOLIA/Scratch/0001/0001_B2.TIF")
+            arrB3 = funcs.singleTifToArray(scratchFol + "0001/0001_B3.TIF")
+            
+            savi  = SAVI(arrB2,arrB3,L=0.5)
+            
+            outName = zipName[-57:-53] + "_" + zipName[-53:-51] + "_" + zipName[-51:-49] + ".tif"
+            
+            funcs.array_to_raster(scratchFol + "0001/0001_B2.TIF", savi, outFol+outName)
+
+
+#extract  many zip files from one folder into one
+#very specific for SMOS data from ESA
+import os, zipfile
+
+inFol = "E:/Soil_Moisture/SMOS/L2SM/MIR_SMUDP2/"
+outFol = "D:/Test/SMOS/"        
+
+for files in os.listdir(inFol):
+    if files[-3:].lower() == "zip":
+        zipName = inFol+"/"+files
+        zipped = zipfile.ZipFile(zipName, mode='r')
+        print("File " + files + " opened")
         
+        for j in zipped.namelist():
+            zipped.extract(j, outFol, pwd=None)
+            print(j + " extracted")
+
 
 ###############################################################################
 #COPY MANY TO ONE

@@ -97,7 +97,7 @@ for folds in os.listdir(inFol):
             
             savi  = SAVI(arrB2,arrB3,L=0.5)
             
-            outName = zipName[-57:-53] + "_" + zipName[-53:-51] + "_" + zipName[-51:-49] + ".tif"
+            outName = folds[-22:-18] + folds[-18:-16] + folds[-16:-14] + ".tif"
             
             funcs.array_to_raster(scratchFol + "0001/0001_B2.TIF", savi, outFol+outName)
 
@@ -354,3 +354,14 @@ for lines in inTxt.readlines():
 
 inTxt.close()
 outTxt.close()
+
+
+
+###############################################################################
+#Rename files in folder
+###############################################################################
+
+
+
+
+

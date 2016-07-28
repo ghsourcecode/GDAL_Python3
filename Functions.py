@@ -491,6 +491,7 @@ def linReg2(inList1,inList2,outFol=".../outFol/"):
     list1a = list1
     list2a = list2
 
+    
     #Test if dimensions of both input array series are the same. If not, resize the smaller
     #one with zoom function
     #http://stackoverflow.com/questions/13242382/resampling-a-numpy-array-representing-an-image
@@ -580,12 +581,23 @@ def linReg2(inList1,inList2,outFol=".../outFol/"):
             stderrAr[yCo,xCo] = stderr
             
             xx = xx+1
-        
+    
+    # Return output, if array input, return arrays, else tiffs
     if iType == 0:  #if input was array, return array... if was raster, return raster
         outTuple = (slopeAr, intcptAr, rvalAr, pvalAr, stderrAr) 
         return outTuple
+    
     else:
-        if size2 > size1:    #if one of the tifs was resized, the ouput must use the new dimensions 
+        # if cropped folder exisits, new rsater dimensions were created, use first cropped raster as master
+        if os.path.isdir(outFol + "Cropped/"):
+            firstNewRas = [outFol + "Cropped/" + x for x in os.listdir(outFol + "Cropped/")][0]
+            array_to_raster(firstNewRas,slopeAr,outFol + "slope.tif")
+            array_to_raster(firstNewRas,intcptAr,outFol + "intcpt.tif")
+            array_to_raster(firstNewRas,rvalAr,outFol + "rval.tif")
+            array_to_raster(firstNewRas,pvalAr,outFol + "pval.tif")
+            array_to_raster(firstNewRas,stderrAr,outFol + "stderr.tif")
+            
+        elif size2 > size1:    #if one of the tifs was resized, the ouput must use the new dimensions 
             array_to_raster(inList2[0],slopeAr,outFol + "slope.tif")
             array_to_raster(inList2[0],intcptAr,outFol + "intcpt.tif")
             array_to_raster(inList2[0],rvalAr,outFol + "rval.tif")
@@ -1193,3 +1205,4 @@ def vectors_to_raster(file_paths, rows, cols, geo_transform, projection):
         labeled_pixels += band.ReadAsArray()
         ds = None
     return labeled_pixels
+    

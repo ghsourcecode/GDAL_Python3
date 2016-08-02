@@ -241,7 +241,7 @@ def linReg(inList):
     outListReg = []
     
     outListMK = list(map( (lambda x: mk_test(x)) , dstackList))
-    for k in range(len(outListReg)):
+    for k in range(len(outListMK)):
         mkPAr[k] = outListMK[k][1]
     
     outShape = inList[0].shape

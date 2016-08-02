@@ -231,16 +231,17 @@ def linReg(inList):
 
     outListReg = list(map( (lambda x: scipy.stats.linregress(timeList, x)) , dstackList))
     
-    outListMK = list(map( (lambda x: mk_test(x)) , dstackList))
-        
-    
     for k in range(len(outListReg)):
         slopeAr[k] = outListReg[k][0]
         intcptAr[k] = outListReg[k][1]
         rvalAr[k] = outListReg[k][2]
         pvalAr[k] = outListReg[k][3]
         stderrAr[k] = outListReg[k][4]
-        
+    
+    outListReg = []
+    
+    outListMK = list(map( (lambda x: mk_test(x)) , dstackList))
+    for k in range(len(outListReg)):
         mkPAr[k] = outListMK[k][1]
     
     outShape = inList[0].shape

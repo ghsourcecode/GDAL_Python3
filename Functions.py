@@ -239,7 +239,7 @@ def linReg(inList):
         stderrAr[k] = outListReg[k][4]
     
     outListReg = []
-    
+        
     outListMK = list(map( (lambda x: mk_test(x)) , dstackList))
     for k in range(len(outListMK)):
         mkPAr[k] = outListMK[k][1]
